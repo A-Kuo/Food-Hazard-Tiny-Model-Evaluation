@@ -33,7 +33,8 @@ st.set_page_config(
 
 import base64
 
-CATEGORY_COLORS = {
+# Text-only fallbacks when a category image is missing
+CATEGORY_EMOJI_FALLBACK = {
     "Biological": "🦠",
     "Allergen":   "⚠️",
     "Physical":   "🔩",
@@ -46,13 +47,12 @@ CATEGORY_COLORS = {
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 
 CATEGORY_IMAGE_FILES = {
-    "Biological": "biological.png",
-    "Allergen":   "allergen.png",
-    "Physical":   "physical.png",
-    "Chemical":   "chemical.png",
+    "Biological": "biological.png",   # biohazard caution sign
+    "Allergen":   "allergen.png",     # food allergy warning
+    "Physical":   "physical.png",     # choking / foreign-object hazard
+    "Chemical":   "chemical.png",     # toxic skull-and-crossbones
 }
 
-@st.cache_data
 def get_image_as_base64(file_path: str) -> str:
     if os.path.exists(file_path):
         try:
@@ -63,20 +63,25 @@ def get_image_as_base64(file_path: str) -> str:
             pass
     return ""
 
-def get_category_icon_html(category: str, width: int = 20) -> str:
+def get_category_icon_html(category: str, height: int = 28) -> str:
+    """Inline category warning-sign image (aspect ratio preserved)."""
     filename = CATEGORY_IMAGE_FILES.get(category)
     if filename:
         file_path = os.path.join(ASSETS_DIR, filename)
         base64_str = get_image_as_base64(file_path)
         if base64_str:
-            return f'<img src="{base64_str}" style="width: {width}px; height: {width}px; vertical-align: middle; margin-right: 6px;" />'
-    
-    # Fallback to emoji
-    emoji = CATEGORY_COLORS.get(category, "❓")
-    return f'<span style="font-size: {width}px; vertical-align: middle; margin-right: 6px;">{emoji}</span>'
+            return (
+                f'<img src="{base64_str}" '
+                f'style="height: {height}px; width: auto; max-width: {height * 3}px; '
+                f'object-fit: contain; vertical-align: middle; margin-right: 8px;" '
+                f'alt="{category}" />'
+            )
+
+    emoji = CATEGORY_EMOJI_FALLBACK.get(category, "❓")
+    return f'<span style="font-size: {height}px; vertical-align: middle; margin-right: 6px;">{emoji}</span>'
 
 def render_styled_result(category: str, label: str, alert_type: str = "info", subtitle: str = ""):
-    icon_html = get_category_icon_html(category, width=24)
+    icon_html = get_category_icon_html(category, height=40)
     colors = {
         "info":    {"bg": "#EFF6FF", "border": "#3B82F6", "text": "#1E3A8A"},
         "warning": {"bg": "#FFFBEB", "border": "#F59E0B", "text": "#78350F"},
@@ -458,13 +463,20 @@ elif page == "Failure Mode Explorer":
     if not failures.empty:
         st.subheader(f"⚠️ Known Misclassifications ({len(failures)})")
         for _, row in failures.iterrows():
-            true_icon = CATEGORY_COLORS.get(row['true_category'], '')
-            pred_icon = CATEGORY_COLORS.get(row[pred_col], '')
             label = (
-                f"True: {true_icon} {row['true_category']} "
-                f"| Predicted: {pred_icon} {row[pred_col]} | [{row['risk_level']} Risk]"
+                f"True: {row['true_category']} "
+                f"| Predicted: {row[pred_col]} | [{row['risk_level']} Risk]"
             )
             with st.expander(label):
+                true_icon = get_category_icon_html(row['true_category'], height=32)
+                pred_icon = get_category_icon_html(row[pred_col], height=32)
+                st.markdown(
+                    f"<div style='display:flex; align-items:center; gap:16px; margin-bottom:8px;'>"
+                    f"<span>True: {true_icon}<strong>{row['true_category']}</strong></span>"
+                    f"<span>Predicted: {pred_icon}<strong>{row[pred_col]}</strong></span>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
                 st.write(f"**Report Details:** {row['text']}")
                 st.caption(f"Record ID: `{row['id']}`")
 
@@ -494,7 +506,7 @@ elif page == "Model Diagnostics":
     cols = st.columns(len(ml_classes))
     for col, cat in zip(cols, ml_classes):
         with col:
-            icon_html = get_category_icon_html(cat, width=24)
+            icon_html = get_category_icon_html(cat, height=32)
             st.markdown(f"<div style='display: flex; align-items: center;'>{icon_html}<strong style='font-size: 16px;'>{cat}</strong></div>", unsafe_allow_html=True)
             top = ml_top_features.get(cat, [])
             if top:
@@ -509,16 +521,16 @@ elif page == "Model Diagnostics":
     st.markdown("""
 | Pattern Type | Morphology Suffix/Prefix | Target Hazard Class |
 |---|---|---|
-| Biological (Bacteria) | `-ella` (Salmonella, Shigella) | 🦠 Biological |
-| Biological (Bacteria) | `-coccus` (Staphylococcus) | 🦠 Biological |
-| Biological (Bacteria) | `-bacter` (Campylobacter) | 🦠 Biological |
-| Biological (Bacteria) | `-rium` (Clostridium) | 🦠 Biological |
-| Biological (Virus) | `-virus` (Norovirus) | 🦠 Biological |
-| Chemical (Plastics) | `-phthalate` (Diethylhexylphthalate) | 🧪 Chemical |
-| Chemical (Organics) | `-aldehyde` (Acetaldehyde) | 🧪 Chemical |
-| Chemical (Metals) | Heavy metals (Lead, Mercury) | 🧪 Chemical |
-| Physical (Industrial) | Tungsten, Titanium, Graphite | 🔩 Physical |
-| Physical (Debris) | Glass, Metal shavings, Ceramic | 🔩 Physical |
+| Biological (Bacteria) | `-ella` (Salmonella, Shigella) | Biological |
+| Biological (Bacteria) | `-coccus` (Staphylococcus) | Biological |
+| Biological (Bacteria) | `-bacter` (Campylobacter) | Biological |
+| Biological (Bacteria) | `-rium` (Clostridium) | Biological |
+| Biological (Virus) | `-virus` (Norovirus) | Biological |
+| Chemical (Plastics) | `-phthalate` (Diethylhexylphthalate) | Chemical |
+| Chemical (Organics) | `-aldehyde` (Acetaldehyde) | Chemical |
+| Chemical (Metals) | Heavy metals (Lead, Mercury) | Chemical |
+| Physical (Industrial) | Tungsten, Titanium, Graphite | Physical |
+| Physical (Debris) | Glass, Metal shavings, Ceramic | Physical |
 
 > **Allergen Caveat**: Morphological matching is *least reliable* for allergens.  
 > Suffixes like `-in` (casein, penicillin) trigger false Chemical hits.  
