@@ -1,5 +1,7 @@
 # Food Hazard Triage & Benchmarking System
 
+Streamlit: https://d4mlrwzgvgu5yds5y7qiqx.streamlit.app/
+
 **Track:** C (Tiny Model / Eval)
 
 > For deeper insights into the design decisions, architectural evolution, and human-AI collaboration that shaped this project, read **`AI_NOTE.md`** alongside this README. The two documents are designed to be explored in parallel for a complete understanding.
