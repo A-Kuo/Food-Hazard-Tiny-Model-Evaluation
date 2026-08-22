@@ -1,0 +1,140 @@
+id,text,true_category,risk_level
+REC-1000,Contamination with Clostriferens toxicus detected in canned goods.,Biological,High
+REC-1001,"Despite testing free of all pathogens, the product is recalled due to elevated arsenic.",Chemical,High
+REC-1002,"Tested positive for elevated sodium, no pathogens found.",Chemical,Low
+REC-1003,Frozen chicken products recalled due to Salmonella typhimurium contamination.,Biological,High
+REC-1004,Undeclared sulfites in dried apricots may cause reactions in sensitive individuals.,Allergen,Moderate
+REC-1005,Cyclospora cayetanensis linked to fresh basil imports.,Biological,High
+REC-1006,Residual veterinary drug (tetracycline) above MRL in chicken.,Chemical,Moderate
+REC-1007,Malachite green dye illegally used on farmed shrimp.,Chemical,High
+REC-1008,Product contains latex-reactive fruit (kiwi) not declared.,Allergen,Moderate
+REC-1009,Ethylene oxide residue found in sesame seeds.,Chemical,High
+REC-1010,Voluntary recall of ground beef that may be contaminated with E. coli O157:H7.,Biological,High
+REC-1011,Presence of acetaldehyde above safety threshold in juice product.,Chemical,Moderate
+REC-1012,Sudan red dye found in paprika spice product.,Chemical,High
+REC-1013,Baby formula contains undeclared soy protein.,Allergen,High
+REC-1014,Bread recalled due to possible presence of foreign material (wire).,Physical,High
+REC-1015,Dioxin contamination in farmed salmon feed product.,Chemical,High
+REC-1016,"The product was tested negative for Salmonella and E. coli, but is recalled due to undeclared milk.",Allergen,High
+REC-1017,Risk of bacterial proliferation of E. coli O104:H4 identified.,Biological,High
+REC-1018,Giardia lamblia found in contaminated spring water.,Biological,Moderate
+REC-1019,Consumer found what appeared to be a small piece of gold jewelry in the bread loaf.,Physical,High
+REC-1020,Trichinella spiralis parasite risk in wild boar sausage.,Biological,High
+REC-1021,Nails found in imported dried fish product.,Physical,High
+REC-1022,Unknown Staphylocryptus strain found in ready-to-eat salad.,Biological,High
+REC-1023,Recall due to undeclared wheat in gluten-free oat cookies.,Allergen,High
+REC-1024,Jewelry fragment (ring) found in bread loaf.,Physical,High
+REC-1025,Corn starch product contaminated with undeclared wheat gluten.,Allergen,High
+REC-1026,Undeclared egg in pasta product.,Allergen,High
+REC-1027,The product may support growth of harmful microorganisms including Staphylococcus.,Biological,Moderate
+REC-1028,"Certified peanut-free facility, but recalling due to metal shavings from equipment.",Physical,High
+REC-1029,Undeclared sulfites in wine labelled as sulfite-free.,Allergen,Moderate
+REC-1030,Spore-forming pathogen Bacillus anthracis flagged in protein powder recall.,Biological,High
+REC-1031,Juice recalled due to elevated levels of patulin.,Chemical,Moderate
+REC-1032,Recall triggered by presence of tungsten filings found in canned tuna.,Physical,High
+REC-1033,Confirmed by consumer report: broken ceramic in jarred baby food.,Physical,High
+REC-1034,Macadamia nuts not declared on confectionery label.,Allergen,Moderate
+REC-1035,Recall of protein bar due to undeclared milk and soy.,Allergen,High
+REC-1036,Dairy-free label recalled because milk protein casein was undeclared.,Allergen,High
+REC-1037,Zearalenone mycotoxin found in corn-based breakfast cereal.,Chemical,Moderate
+REC-1038,Routine testing revealed Salmonella enterica in peanut butter batches.,Biological,High
+REC-1039,Wood splinters found in bagged salads.,Physical,Moderate
+REC-1040,"Product contains added calcium (from milk sources) not listed, and has elevated lead.",Allergen,High
+REC-1041,Bone fragments found in boneless chicken breast.,Physical,Low
+REC-1042,Bacillus cereus toxin detected in pre-cooked rice products.,Biological,Moderate
+REC-1043,Elevated levels of aflatoxin found in corn meal.,Chemical,High
+REC-1044,Glass fragments found in jars of baby food.,Physical,High
+REC-1045,Chloramphenicol antibiotic residue in imported honey.,Chemical,High
+REC-1046,Metal shavings discovered in ground turkey.,Physical,High
+REC-1047,Gluten-free pasta recalled for potential Listeria contamination.,Biological,High
+REC-1048,Warning: processed in a facility that also handles soy. Actual recall is for glass pieces.,Physical,Moderate
+REC-1049,Lab results were negative for Listeria. Recall is due to metal wire fragments.,Physical,High
+REC-1050,High levels of lead detected in cinnamon apple sauce.,Chemical,High
+REC-1051,Ceramic shards detected in canned tomatoes.,Physical,High
+REC-1052,Undeclared milk allergen found in vegan cheese alternative.,Allergen,High
+REC-1053,Plastic film strip discovered in frozen lasagna.,Physical,Moderate
+REC-1054,Sesame seed buns packaged and labeled as plain buns.,Allergen,High
+REC-1055,Tree nut warning: product may contain traces of undeclared almonds.,Allergen,Moderate
+REC-1056,Cantaloupes linked to an outbreak of Listeria.,Biological,High
+REC-1057,Allergy alert: undeclared fish (pollock) in fish sticks.,Allergen,High
+REC-1058,Bisphenol A (BPA) leaching from can lining into tomato product.,Chemical,Moderate
+REC-1059,Melamine contamination detected in protein powder.,Chemical,High
+REC-1060,Cryptosporidium parvum detected in apple cider.,Biological,High
+REC-1061,Undeclared lupin flour in bread product.,Allergen,High
+REC-1062,Acrylamide levels exceed ALARA guidelines in potato chips.,Chemical,Moderate
+REC-1063,Mercury levels exceed safety threshold in imported swordfish.,Chemical,High
+REC-1064,Recall of almond milk that was found to contain undeclared dairy.,Allergen,High
+REC-1065,Trichothecene mycotoxin detected in wheat flour.,Chemical,Moderate
+REC-1066,Graphite particles from conveyor belt in granola bars.,Physical,Moderate
+REC-1067,Product recalled due to pesticide residue above legal limit.,Chemical,Moderate
+REC-1068,Excessive nitrate levels in leafy greens.,Chemical,Moderate
+REC-1069,Copper wire strand found inside packaged cheese.,Physical,Moderate
+REC-1070,Cadmium contamination found in organic brown rice.,Chemical,High
+REC-1071,Broken thermometer glass inside beverage bottle.,Physical,High
+REC-1072,Lead solder fragments from equipment failure found in olive oil.,Physical,High
+REC-1073,Carbon fiber fragments from processing equipment in dried pasta.,Physical,High
+REC-1074,Tungsten carbide grinding media found in spice blend.,Physical,High
+REC-1075,Fumonisins B1 and B2 above threshold in corn-based snack.,Chemical,Moderate
+REC-1076,Recall due to elevated concentrations of diethylhexylphthalate in packaging migration.,Chemical,Moderate
+REC-1077,Aspergillus flavus mold contamination in dried figs.,Biological,Moderate
+REC-1078,Fiberglass insulation particles detected in dried spice mixture.,Physical,High
+REC-1079,Undeclared hazelnut in chocolate spread.,Allergen,High
+REC-1080,Gold flake contamination from manufacturing equipment in candy product.,Physical,Moderate
+REC-1081,Titanium shavings from industrial machinery found in rice flour.,Physical,High
+REC-1082,Undeclared crustacean shellfish (shrimp) in spring rolls.,Allergen,High
+REC-1083,Reported by allergist: anaphylaxis linked to undeclared sesame in crackers.,Allergen,High
+REC-1084,Ready-to-eat deli meats recalled after Listeria monocytogenes detected.,Biological,High
+REC-1085,Arsenic levels above FDA guidance in apple juice.,Chemical,High
+REC-1086,Staphylococcus aureus enterotoxin found in deli ham.,Biological,Moderate
+REC-1087,Foil fragments in chocolate bar.,Physical,Moderate
+REC-1088,Recalling canned baked beans because they may contain small pieces of plastic.,Physical,Moderate
+REC-1089,Raw milk recall due to Campylobacter jejuni risk.,Biological,Moderate
+REC-1090,Chocolate bars recalled because they contain undeclared peanuts.,Allergen,High
+REC-1091,Recall of canned fish due to presence of mercury thermometer glass.,Physical,High
+REC-1092,Undeclared cashew in mixed granola bar.,Allergen,High
+REC-1093,Pecan pie contains undeclared walnuts.,Allergen,High
+REC-1094,Hepatitis A virus traced to imported green onions.,Biological,High
+REC-1095,Undeclared celery in vegetable broth concentrate.,Allergen,Moderate
+REC-1096,Shigella sonnei contamination found in bagged salad mix.,Biological,High
+REC-1097,Yersinia enterocolitica found in pasteurized pork chitterlings.,Biological,High
+REC-1098,Deoxynivalenol (vomitoxin/DON) found in oat products.,Chemical,Moderate
+REC-1099,Polybrominated diphenyl ethers (PBDEs) above limit in fish product.,Chemical,High
+REC-1100,"Recall triggered by detection of Pseudomonella virulens, an emerging pathogen.",Biological,High
+REC-1101,Toxoplasma gondii detected in undercooked lamb.,Biological,Moderate
+REC-1102,Phthalate plasticizers found migrating from packaging into dairy product.,Chemical,Moderate
+REC-1103,Mustard seeds not declared on label of spice blend.,Allergen,Moderate
+REC-1104,Undeclared pistachio in premium nut mix.,Allergen,High
+REC-1105,No biological contamination found. Recall due to undeclared peanuts in the chocolate.,Allergen,High
+REC-1106,Brucella abortus risk from raw goat cheese product.,Biological,High
+REC-1107,Benzene detected above EPA limits in carbonated soft drink.,Chemical,High
+REC-1108,Polychlorinated biphenyls (PCBs) found in fish oil capsules.,Chemical,High
+REC-1109,Company X is recalling its frozen spinach due to potential contamination with Listeria monocytogenes.,Biological,High
+REC-1110,Ochratoxin A detected in dried grape products.,Chemical,Moderate
+REC-1111,Found in routine inspection: Vibrio cholerae in oyster harvest batch.,Biological,High
+REC-1112,Gravel contamination reported in imported quinoa.,Physical,Low
+REC-1113,Detected during export screening: aflatoxin B1 above threshold in groundnuts.,Chemical,High
+REC-1114,Mild spoilage odor reported; no pathogens detected above threshold.,Biological,Low
+REC-1115,Coconut-based product contains undeclared tree nuts.,Allergen,High
+REC-1116,Cardboard contamination in protein powder.,Physical,Low
+REC-1117,Cleaning agent contamination (sanitizer) found in bottled water.,Chemical,Moderate
+REC-1118,Zirconium oxide ceramic debris detected in baby cereal.,Physical,High
+REC-1119,Histamine levels above FDA limits in tuna steaks.,Chemical,High
+REC-1120,Penicillium roqueforti contamination in aged cheddar (unexpected strain).,Biological,Low
+REC-1121,Metal staple found in ready-made salad.,Physical,High
+REC-1122,Smoked salmon recalled due to risk of Clostridium botulinum.,Biological,High
+REC-1123,Sand and soil contamination in frozen peas.,Physical,Low
+REC-1124,Stones found in bulk lentils.,Physical,Low
+REC-1125,Taenia saginata tapeworm cysts found in beef tartare.,Biological,High
+REC-1126,Salmonella heidelberg detected in smoked trout.,Biological,High
+REC-1127,Recall triggered by detection of Cronobacter sakazakii in infant formula.,Biological,High
+REC-1128,Norovirus traced back to frozen berries.,Biological,High
+REC-1129,"Vibrio parahaemolyticus found in raw oysters, prompting recall.",Biological,High
+REC-1130,Hydrogen cyanide above safe levels in improperly processed cassava flour.,Chemical,High
+REC-1131,Ascaris lumbricoides eggs found in imported herbs.,Biological,Moderate
+REC-1132,Recall of raw sprouts due to enterohemorrhagic E. coli (EHEC).,Biological,High
+REC-1133,Mislabeled packaging failed to disclose presence of soy in teriyaki sauce.,Allergen,High
+REC-1134,Canned soup recalled for undeclared barley (gluten).,Allergen,High
+REC-1135,Rubber pieces reported by consumers in frozen chicken nuggets.,Physical,Moderate
+REC-1136,Silica desiccant packets found inside chocolate packaging.,Physical,Moderate
+REC-1137,Sprouts recalled after Salmonella detected in routine testing.,Biological,High
+REC-1138,Legionella pneumophila risk in commercially bottled spring water.,Biological,High
