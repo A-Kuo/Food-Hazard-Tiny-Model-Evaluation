@@ -16,18 +16,6 @@ The development workflow was **Human-in-the-Loop (HITL)**: I directed every arch
 * **Automated Workflow & Model Integrity** — Gemini and Ollama were leveraged during the automated workflow to generate edge-case incident reports and verify model integrity under adversarial test phrasing.
 * **Debugging & Architecture Fixes** — When Streamlit encountered a pickle serialization error (`UnserializableReturnValueError`), I directed the architectural separation of data caching (`@st.cache_data` for DataFrames and metrics) from object caching (`@st.cache_resource` for sklearn and custom model instances) and requested the initialization progress meter.
 
----
-
-## Implementation Timeline & Milestones
-(for the 90-120 minute constraint)
-* **8:18 PM UTC** — Timer started. Track C scoping, domain selection (food safety/recall triage), and directory scaffolding.
-* **8:43 PM UTC** — Estimated 30% baseline training data constructed; initial regex heuristics and TF-IDF pipeline verified.
-* **8:50 PM UTC** — Project scaled up to 139 balanced records with deep taxonomy, unusual physical materials, Latin root morphology parser, and GPT-2 semantic dictionary design.
-* **9:09 PM UTC** — Changes to user-facing markdown files completed (rubrics and detailed AI notes).
-* **9:18 PM UTC** — UI fixes implemented: FDA-style dashboard layout added, navigation moved to sidebar, loading screen distraction meters implemented, and cache serialization (`@st.cache_data` vs `@st.cache_resource`) resolved.
-* *Stepped away for 10 minutes to run*
-*  **9:33 PM UTC** — Final evaluation suite completed: bootstrap 95% CI, 5-fold CV, and confusion matrices for all three layers.
-* 
 
 ---
 
