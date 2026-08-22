@@ -15,6 +15,7 @@ Optional (for GPT-2 semantic classifier):
 import sys
 import os
 import time
+from io import StringIO
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -125,7 +126,8 @@ def load_data() -> pd.DataFrame:
 @st.cache_data(show_spinner=False)
 def run_evaluation(_df_hash, df_json: str) -> dict:
     from src.hazard_classifier import evaluate_models
-    df = pd.read_json(df_json)
+    # StringIO required: pandas 2.x treats a bare str as a filepath
+    df = pd.read_json(StringIO(df_json))
     return evaluate_models(df)
 
 @st.cache_resource(show_spinner=False)
@@ -156,7 +158,7 @@ def initialize_with_progress():
     bar_placeholder = st.empty()
     
     with bar_placeholder.container():
-        st.markdown("<h2 style='text-align: center; color: #1E3A8A;'>🛡️ Initializing FDA Triage Analytics...</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: #1E3A8A;'> Initializing FDA Triage Analytics...</h2>", unsafe_allow_html=True)
         bar = st.progress(0, text="Establishing connection to FDA data standards...")
         time.sleep(0.3)
         
@@ -193,7 +195,9 @@ df, results, models = initialize_with_progress()
 # ─────────────────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/U.S._Food_and_Drug_Administration_logo.svg/320px-U.S._Food_and_Drug_Administration_logo.svg.png", width=150)
+    hero_path = os.path.join(ASSETS_DIR, "hero_eggs.jpg")
+    if os.path.exists(hero_path):
+        st.image(hero_path, use_container_width=True)
     st.markdown("### Hazard Triage System")
     st.caption("v2.1.0 | Regulatory Compliance Tools")
     st.divider()
@@ -244,7 +248,7 @@ if page == "Live Triage Dashboard":
         # Distraction / detailed loading meter
         with st.status("Initiating Triage Protocol...", expanded=True) as status:
             time.sleep(0.2)
-            st.write("⚙️ Parsing text entities...")
+            st.write("Parsing text entities...")
             time.sleep(0.3)
             
             from src.semantic_matcher import morphological_classify
@@ -252,21 +256,21 @@ if page == "Live Triage Dashboard":
             ml_model  = models["ml_model"]
             sem       = models["sem"]
 
-            st.write("🔍 Running Layer 1: Rule-Based Heuristic Matcher...")
+            st.write("Running Layer 1: Rule-Based Heuristic Matcher...")
             h_pred   = heuristic.predict_single(user_input)
             time.sleep(0.2)
             
-            st.write("🧬 Running Layer 2: Latin/English Morphological Root Parser...")
+            st.write("Running Layer 2: Latin/English Morphological Root Parser...")
             m_pred   = morphological_classify(user_input) or "No signal"
             time.sleep(0.2)
             
-            st.write("🤖 Running Layer 3: TF-IDF + Logistic Regression ML Inference...")
+            st.write("Running Layer 3: TF-IDF + Logistic Regression ML Inference...")
             ml_pred  = ml_model.predict([user_input])[0]
             ml_probs = ml_model.predict_proba([user_input])[0]
             time.sleep(0.2)
             
             if sem.available:
-                st.write("🧠 Querying GPT-2 Semantic Vector Space...")
+                st.write("Querying GPT-2 Semantic Vector Space...")
                 sem_res = sem.predict_single(user_input)
             else:
                 sem_res = None
@@ -316,7 +320,7 @@ if page == "Live Triage Dashboard":
 
         if sem_res:
             st.divider()
-            st.subheader("🧠 GPT-2 Semantic Centroid Match")
+            st.subheader("GPT-2 Semantic Centroid Match")
             pred = sem_res["prediction"]
             render_styled_result(pred, "sem", alert_type="info", subtitle="Cosine similarity to class centroids")
             sem_df = pd.DataFrame({
@@ -330,7 +334,7 @@ if page == "Live Triage Dashboard":
             )
         else:
             st.caption(
-                "ℹ️ GPT-2 semantic matching is optional. "
+                "GPT-2 semantic matching is optional. "
                 "Uncomment `transformers` and `torch` in requirements.txt to enable."
             )
 
@@ -365,7 +369,7 @@ elif page == "Benchmark Analytics":
 
     # ── Confusion Matrices ──────────────────────────────────────────────────
     st.divider()
-    st.subheader("📊 Confusion Matrix Breakdown")
+    st.subheader("Confusion Matrix Breakdown")
     cm_cols = st.columns(3)
     
     for cm_col, m_dict, title in zip(
@@ -383,7 +387,7 @@ elif page == "Benchmark Analytics":
 
     # ── Overfitting Check ──────────────────────────────────────────────────
     st.divider()
-    st.subheader("🧪 Overfitting Diagnostic: Stratified 5-Fold CV")
+    st.subheader("Overfitting Diagnostic: Stratified 5-Fold CV")
     st.markdown(
         "Because the ML model is trained on a small dataset, in-sample accuracy is inherently optimistic. "
         "The **5-fold CV accuracy** is the honest estimate of generalizability. "
