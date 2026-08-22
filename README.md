@@ -2,7 +2,7 @@
 
 **Track:** C (Tiny Model / Eval)
 
-> **📖 Companion Reading:** For deeper insights into the design decisions, architectural evolution, and human-AI collaboration that shaped this project, read **`AI_NOTE.md`** alongside this README. The two documents are designed to be explored in parallel for a complete understanding.
+> For deeper insights into the design decisions, architectural evolution, and human-AI collaboration that shaped this project, read **`AI_NOTE.md`** alongside this README. The two documents are designed to be explored in parallel for a complete understanding.
 
 ---
 
@@ -200,7 +200,7 @@ These assumptions shape how the triage system interprets food safety language:
 
 ---
 
-## 🚀 Quick Start (30 seconds)
+## Set up
 
 ```bash
 # 1. Navigate to this directory
