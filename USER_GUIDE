@@ -1,0 +1,274 @@
+# Food Hazard Triage & Benchmarking System: User Guide
+
+## Contents
+
+1. Purpose and Intended Use
+2. Installation
+3. Optional GPT-2 Setup
+4. Project Structure
+5. Dashboard Walkthrough
+6. Classification Approaches
+7. Dataset and Stress Tests
+8. Evaluation Methodology
+9. Assumptions and Known Limitations
+10. Troubleshooting
+11. Extending the System
+12. Future Work
+
+---
+
+## 1. Purpose and Intended Use
+
+This educational prototype compares several NLP approaches for assigning a dominant food-hazard category to short incident reports:
+
+- Biological
+- Allergen
+- Physical
+- Chemical
+
+It is designed for exploring tradeoffs between speed, interpretability, zero-shot generalization, and learned language patterns. It is not a regulatory, clinical, or production food-safety system.
+
+---
+
+## 2. Installation
+
+### Requirements
+
+- Python 3.9 or later
+- pip
+
+### Setup
+
+```bash
+git clone [https://github.com/A-Kuo/Food-Hazard-Tiny-Model-Evaluation.git](https://github.com/A-Kuo/Food-Hazard-Tiny-Model-Evaluation.git)
+cd Food-Hazard-Tiny-Model-Evaluation
+pip install -r requirements.txt
+python -m streamlit run app.py
+```
+
+Streamlit prints a local address, typically:
+
+```text
+http://localhost:8501
+```
+
+---
+
+## 3. Optional GPT-2 Setup
+
+The GPT-2 semantic-centroid baseline is optional because it requires downloading transformer weights.
+
+1. Uncomment the following dependencies in `requirements.txt`:
+
+```text
+transformers>=4.38.0
+torch>=2.0.0
+```
+
+2. Reinstall dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Restart the dashboard:
+
+```bash
+python -m streamlit run app.py
+```
+
+The first run may download approximately 500 MB of model weights.
+
+---
+
+## 4. Project Structure
+
+```text
+food_hazard_triage/
+├── README.md
+├── USER_GUIDE.md
+├── AI_NOTE.md
+├── requirements.txt
+├── app.py
+├── data/
+│   └── food_recalls_sample.csv
+└── src/
+    ├── __init__.py
+    ├── generate_data.py
+    ├── hazard_classifier.py
+    └── semantic_matcher.py
+```
+
+- `app.py`: Streamlit application entry point.
+- `generate_data.py`: Generates the synthetic incident dataset.
+- `hazard_classifier.py`: Rule-based and TF-IDF/logistic-regression methods plus evaluation logic.
+- `semantic_matcher.py`: Morphological and optional embedding-based matching.
+
+---
+
+## 5. Dashboard Walkthrough
+
+### Live Triage
+
+Paste an incident description or select an example. The dashboard runs enabled methods and displays:
+
+- Predicted dominant hazard class
+- Confidence or method score
+- Method agreement or disagreement
+- Relevant warnings or caveats
+
+### Benchmark Analytics
+
+Compare methods using:
+
+- In-sample accuracy
+- Macro F1
+- 500-resample bootstrap confidence intervals
+- Stratified 5-fold cross-validation
+- Confusion matrices
+
+Use cross-validation rather than in-sample accuracy as the better indicator of likely generalization on this small dataset.
+
+### Failure Mode Explorer
+
+Review misclassifications and low-confidence cases. The included stress tests target:
+
+- Negated hazards
+- Multiple or conflicting hazards
+- Facility-certification contradictions
+- Rare industrial materials
+- Novel pathogen-like language
+- Predicate-first hazard phrasing
+
+### Diagnostics
+
+Inspect learned TF-IDF features, morphological patterns, and category-specific caveats.
+
+---
+
+## 6. Classification Approaches
+
+### Rule-Based Heuristic
+
+Uses keyword taxonomies, regex, and negation handling.
+
+**Best for:** Fast, transparent handling of known hazards.  
+**Limitation:** Can be brittle when wording is indirect, contradictory, or unfamiliar.
+
+### Morphological Root Classifier
+
+Uses patterns such as `-ella`, `-coccus`, `-bacter`, `-ium`, `-virus`, `-phthalate`, and `-aldehyde`, plus rare-material rules.
+
+**Best for:** Zero-shot pathogen-like terms and unfamiliar industrial debris.  
+**Limitation:** Allergen names are usually vernacular rather than morphological, so this method is intentionally weaker for allergen classification.
+
+### Supervised Tiny ML Classifier
+
+Uses TF-IDF unigrams/bigrams with sublinear scaling and calibrated logistic regression.
+
+**Best for:** Learning patterns present in the synthetic training language.  
+**Limitation:** A 139-record dataset can lead to overfitting; cross-validation is required.
+
+### Optional GPT-2 Semantic Centroid Baseline
+
+Mean-pools GPT-2 embeddings into class centroids and classifies reports by cosine similarity.
+
+**Best for:** Semantic variation in phrasing.  
+**Limitation:** It is slower and requires transformer dependencies; results should not be treated as production-grade semantic understanding.
+
+---
+
+## 7. Dataset and Stress Tests
+
+The dataset contains 139 balanced synthetic reports modeled on the style of published FDA Enforcement Reports and USDA FSIS alerts.
+
+| Category | Examples |
+|---|---|
+| Biological | Listeria, Salmonella, E. coli, Norovirus |
+| Allergen | Undeclared milk, peanuts, wheat, shellfish |
+| Physical | Glass, plastic, metal filings, wood splinters |
+| Chemical | Phthalates, lead, mercury, pesticide residues |
+
+The dataset includes adversarial examples to expose failure modes. These examples are for evaluation design and do not represent actual reported incidents.
+
+---
+
+## 8. Evaluation Methodology
+
+### Stratified 5-Fold Cross-Validation
+
+The dataset is small and class-balanced. Stratification preserves category representation across folds. A large gap between in-sample and cross-validation performance suggests that the supervised classifier may be memorizing rather than generalizing.
+
+### Bootstrap Confidence Intervals
+
+The application uses 500 bootstrap resamples to estimate uncertainty around accuracy and macro F1. Wide intervals indicate unstable performance on this limited dataset.
+
+### Interpretation
+
+Do not interpret a high in-sample score as real-world food-safety reliability. The most useful output is often a disagreement between methods or a failure case that reveals where a human reviewer should investigate further.
+
+---
+
+## 9. Assumptions and Known Limitations
+
+### Dominant-class output
+
+The tool returns one dominant category. Real incidents can contain multiple hazards, such as physical debris containing a toxic metal, and should be escalated for human review.
+
+### Allergen-versus-chemical overlap
+
+Terms such as `casein`, `lecithin`, and `sulfites` can create ambiguity. An allergen guard suppresses some chemical-pattern matches when strong allergen evidence is present, but context remains important.
+
+### Synthetic data
+
+The data is not a representative FDA/USDA production corpus. It is intentionally balanced and designed to make model behavior observable, which limits external validity.
+
+### Morphological limits
+
+Latin-root patterns can help identify pathogen-like language but are not a reliable substitute for domain knowledge, especially for allergens and ambiguous substances.
+
+---
+
+## 10. Troubleshooting
+
+### `ModuleNotFoundError: No module named 'streamlit'`
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the command from the project root.
+
+### Port 8501 is already in use
+
+Streamlit normally selects the next available port. You can also choose one directly:
+
+```bash
+python -m streamlit run app.py --server.port 8502
+```
+
+### GPT-2 baseline unavailable
+
+Confirm that `transformers` and `torch` are enabled in `requirements.txt`, reinstall dependencies, and restart Streamlit.
+
+### Dataset not found
+
+The application should generate the synthetic dataset on first run. Confirm that the `data/` directory exists and that you launched the app from the project root.
+
+---
+
+## 11. Extending the System
+
+Potential improvements include:
+
+- Replacing or supplementing synthetic examples with carefully curated public recall notices.
+- Adding multi-label hazard classification and explicit human-review escalation.
+- Using sentence-transformer embeddings instead of GPT-2 centroid embeddings.
+- Adding a retrieval layer that links predictions to source examples and rationale.
+- Expanding stress tests for negation, causality, source attribution, and temporal context.
+
+---
+
+## 12. Future Work
+
+With more time, I would validate the taxonomy with food-safety subject-matter experts, measure performance on a held-out public dataset, and redesign the output around multi-label classification plus human-review queues rather than a single dominant label.
