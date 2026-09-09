@@ -252,17 +252,19 @@ if page == "Live Triage Dashboard":
             st.write("Parsing text entities...")
             time.sleep(0.3)
             
-            from src.semantic_matcher import morphological_classify
+            from src.semantic_matcher import morphological_classify, morphological_classify_risk
             heuristic = models["heuristic"]
             ml_model  = models["ml_model"]
             sem       = models["sem"]
 
             st.write("Running Layer 1: Rule-Based Heuristic Matcher...")
-            h_pred   = heuristic.predict_single(user_input)
+            h_pred      = heuristic.predict_single(user_input)
+            h_risk_pred = heuristic.predict_risk_single(user_input)
             time.sleep(0.2)
-            
+
             st.write("Running Layer 2: Latin/English Morphological Root Parser...")
-            m_pred   = morphological_classify(user_input) or "No signal"
+            m_pred      = morphological_classify(user_input) or "No signal"
+            m_risk_pred = morphological_classify_risk(user_input) or "No signal"
             time.sleep(0.2)
             
             st.write("Running Layer 3: TF-IDF + Logistic Regression ML Inference...")
@@ -290,12 +292,14 @@ if page == "Live Triage Dashboard":
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown("**Layer 1: Heuristic**")
-            render_styled_result(h_pred, "heuristic", alert_type="info")
+            h_subtitle = f"Risk Level: **{h_risk_pred}**" if h_risk_pred != "Unknown" else ""
+            render_styled_result(h_pred, "heuristic", alert_type="info", subtitle=h_subtitle)
             st.caption("Regex + pathogen taxonomy. Fast but brittle on negations.")
 
         with col2:
             st.markdown("**Layer 2: Morphological**")
-            render_styled_result(m_pred, "morphological", alert_type="warning")
+            m_subtitle = f"Risk Level: **{m_risk_pred}**" if m_risk_pred != "No signal" else ""
+            render_styled_result(m_pred, "morphological", alert_type="warning", subtitle=m_subtitle)
             st.caption("Latin root matching. Predicts unknown pathogens/metals.")
 
         with col3:
@@ -359,6 +363,8 @@ elif page == "Benchmark Analytics":
     h_m  = results['heuristic_metrics']
     mo_m = results['morpho_metrics']
     ml_m = results['ml_metrics']
+    h_risk_m  = results.get('heuristic_risk_metrics', {})
+    mo_risk_m = results.get('morpho_risk_metrics', {})
     ml_risk_m = results.get('ml_risk_metrics', {})
     cv   = results['cv_results']
 
@@ -367,18 +373,27 @@ elif page == "Benchmark Analytics":
 
     # KPI Layout
     st.markdown("### Top-Line Model Performance (In-Sample)")
-    col1, col2, col3, col4 = st.columns(4)
+    st.caption("Hazard category accuracy")
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.info(f"**Heuristic Accuracy:** {h_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(h_m['acc_ci'])})")
     with col2:
         st.warning(f"**Morphological Accuracy:** {mo_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(mo_m['acc_ci'])})")
     with col3:
         st.success(f"**ML Category Accuracy:** {ml_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(ml_m['acc_ci'])})")
-    with col4:
-        if ml_risk_m and ml_risk_m.get('accuracy'):
-            st.success(f"**ML Risk Accuracy:** {ml_risk_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(ml_risk_m['acc_ci'])})")
-        else:
-            st.empty()
+
+    st.caption("Risk-level accuracy")
+    rcol1, rcol2, rcol3 = st.columns(3)
+    for rcol, m_dict, label, box in (
+        (rcol1, h_risk_m,  "Heuristic Risk Accuracy",     st.info),
+        (rcol2, mo_risk_m, "Morphological Risk Accuracy", st.warning),
+        (rcol3, ml_risk_m, "ML Risk Accuracy",            st.success),
+    ):
+        with rcol:
+            if m_dict and m_dict.get('accuracy'):
+                box(f"**{label}:** {m_dict['accuracy']:.1%} \n\n (95% CI: {fmt_ci(m_dict['acc_ci'])})")
+            else:
+                st.empty()
 
     # ── Confusion Matrices ──────────────────────────────────────────────────
     st.divider()

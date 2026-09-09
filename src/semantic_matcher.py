@@ -177,6 +177,67 @@ def morphological_classify(text: str) -> Optional[str]:
     return None
 
 
+# Severity morphological markers, calibrated against src/generate_data.py's
+# risk_level labels — same lexical-scoring approach as the category matcher.
+HIGH_RISK_TERMS = [
+    r'\bella\b', r'\bcoccus\b', r'\bbacter[a-z]*\b', r'\bvirus\b',
+    r'\bclostri[a-z]+', r'\bcryptospor', r'\btrichin', r'\bcronobach',
+    r'\blegionell', r'\byersin', r'\bbrucell', r'\bshigell', r'\bvibri',
+    r'\banthracis\b', r'\banaphylaxis\b', r'\bundeclared\b', r'\bglass\b',
+    r'\bshard', r'\bfiberglass\b', r'\bcarbon fiber\b', r'\bzirconium\b',
+    r'\bjewelry\b', r'\bforeign (material|object)', r'\blead\b',
+    r'\bmercury\b', r'\barsenic\b', r'\bcadmium\b', r'\bdioxin',
+    r'\bpcb\b', r'\bmelamine\b', r'\bmalachite green', r'\bsudan red',
+    r'\bchloramphenicol', r'\btungsten\b', r'\btitanium\b',
+]
+
+MODERATE_RISK_TERMS = [
+    r'\bcampylo', r'\bbacill', r'\bstaph', r'\bgiardia', r'\btoxoplas',
+    r'\bascari', r'\baspergill', r'\bmold\b', r'\bplastic\b', r'\bwood\b',
+    r'\bsplinter\b', r'\brubber\b', r'\bfoil\b', r'\bsilica\b',
+    r'\bcopper wire\b', r'\bgold\b', r'\bgraphite\b', r'\bpesticide',
+    r'\bherbicide', r'\bpatulin', r'\bbisphenol', r'\bbpa\b',
+    r'\bacrylamide\b', r'\bnitrate\b', r'\bochratoxin', r'\bfumonisin',
+    r'\bzearalenone', r'\bdeoxynivalenol', r'\bphthalate\b', r'\btraces?\b',
+    r'\bmay contain\b',
+]
+
+LOW_RISK_TERMS = [
+    r'\bunexpected strain\b', r'\bstone\b', r'\bgravel\b',
+    r'\bbonefrag', r'\bcardboard\b', r'\bsand\b', r'\bsoil\b',
+    r'\belevated sodium\b', r'\bmild spoilage\b', r'\btrace amounts?\b',
+]
+
+
+def morphological_classify_risk(text: str) -> Optional[str]:
+    """
+    Returns a risk-level prediction (High/Moderate/Low) based purely on
+    morphological / lexical severity markers, or None if no strong signal
+    found. Mirrors morphological_classify()'s scoring approach.
+    """
+    txt = text.lower()
+    txt = re.sub(
+        r'(tested? (negative|clear|free) for|free of|free from|certified \S+-free|does not contain|no \w+ (found|detected|present))\s+[\w\s,]+?(?=[,.]|$)',
+        '', txt
+    )
+
+    scores = {"High": 0, "Moderate": 0, "Low": 0}
+    for pattern in HIGH_RISK_TERMS:
+        if re.search(pattern, txt, re.IGNORECASE):
+            scores["High"] += 2
+    for pattern in MODERATE_RISK_TERMS:
+        if re.search(pattern, txt, re.IGNORECASE):
+            scores["Moderate"] += 2
+    for pattern in LOW_RISK_TERMS:
+        if re.search(pattern, txt, re.IGNORECASE):
+            scores["Low"] += 2
+
+    best = max(scores, key=scores.get)
+    if scores[best] >= 2:
+        return best
+    return None
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. GPT-2 SEMANTIC EMBEDDING CLASSIFIER (requires transformers + torch)
 # ─────────────────────────────────────────────────────────────────────────────

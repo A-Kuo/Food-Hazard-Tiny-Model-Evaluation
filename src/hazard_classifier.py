@@ -21,7 +21,9 @@ from sklearn.metrics import (
 )
 from scipy.stats import bootstrap
 
-from src.semantic_matcher import morphological_classify, get_semantic_classifier
+from src.semantic_matcher import (
+    morphological_classify, morphological_classify_risk, get_semantic_classifier
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -75,6 +77,40 @@ class RuleBasedHeuristic:
             re.IGNORECASE
         )
 
+        # Severity tiers, calibrated against src/generate_data.py's risk_level
+        # labels. Acute pathogens, heavy metals, and rigid foreign objects skew
+        # High; residues/moulds/soft debris skew Moderate; trace/background
+        # findings skew Low. Checked in High -> Moderate -> Low priority since
+        # a single report can mention terms from more than one tier.
+        self.HIGH_RISK_PATTERN = re.compile(
+            r'\b(listeria|salmonella|e\.?\s*coli|botulinum|vibrio|shigella|'
+            r'yersinia|brucella|cryptosporidium|trichinella|cronobacter|'
+            r'legionella|taeni[a-z]+|hepatitis\s*a|cyclospora|anthracis|'
+            r'norovirus|anaphylaxis|undeclared|glass|metal\s+shaving|'
+            r'metal\s+staple|nail|wire|ceramic|shard|fiberglass|'
+            r'carbon\s+fiber|zirconium|jewelry|foreign\s+(material|object)|'
+            r'lead|mercury|arsenic|cadmium|dioxin|pcb|melamine|'
+            r'malachite|sudan\s+red|chloramphenicol|hydrogen\s+cyanide|'
+            r'ethylene\s+oxide|benzene|histamine|tungsten|titanium)\b',
+            re.IGNORECASE
+        )
+        self.MODERATE_RISK_PATTERN = re.compile(
+            r'\b(campylobacter|bacillus|staphylococcus|giardia|toxoplasma|'
+            r'ascaris|aspergillus|mold|microorganisms?|plastic|wood|'
+            r'splinter|rubber|foil|silica|copper\s+wire|gold|graphite|'
+            r'pesticide|herbicide|fungicide|patulin|bisphenol|bpa|'
+            r'acrylamide|nitrate|nitrite|ochratoxin|fumonisin|zearalenone|'
+            r'deoxynivalenol|phthalate|aldehyde|tetracycline|sulfite|'
+            r'traces?\s+of|may\s+contain)\b',
+            re.IGNORECASE
+        )
+        self.LOW_RISK_PATTERN = re.compile(
+            r'\b(unexpected\s+strain|stone|gravel|bone\s+fragment|'
+            r'cardboard|sand|soil|elevated\s+sodium|mild\s+spoilage|'
+            r'trace\s+amounts?|minor)\b',
+            re.IGNORECASE
+        )
+
     def _strip_negations(self, text: str) -> str:
         """Remove negated contaminant clauses to reduce false positives."""
         # Remove patterns like "tested negative for Salmonella"
@@ -95,6 +131,19 @@ class RuleBasedHeuristic:
 
     def predict(self, texts):
         return [self.predict_single(t) for t in texts]
+
+    def predict_risk_single(self, text: str) -> str:
+        clean = self._strip_negations(text)
+        if self.HIGH_RISK_PATTERN.search(clean):
+            return "High"
+        if self.MODERATE_RISK_PATTERN.search(clean):
+            return "Moderate"
+        if self.LOW_RISK_PATTERN.search(clean):
+            return "Low"
+        return "Unknown"
+
+    def predict_risk(self, texts):
+        return [self.predict_risk_single(t) for t in texts]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -324,10 +373,16 @@ def evaluate_models(df: pd.DataFrame) -> dict:
     has_risk = risk_labels[0] is not None
 
     # --- Layer 1: Heuristic ---
-    heuristic_preds = RuleBasedHeuristic().predict(texts)
+    heuristic = RuleBasedHeuristic()
+    heuristic_preds = heuristic.predict(texts)
+    heuristic_risk_preds = heuristic.predict_risk(texts) if has_risk else ["N/A"] * len(texts)
 
     # --- Layer 2: Morphological ---
     morpho_preds = [morphological_classify(t) or "Unknown" for t in texts]
+    morpho_risk_preds = (
+        [morphological_classify_risk(t) or "Unknown" for t in texts]
+        if has_risk else ["N/A"] * len(texts)
+    )
 
     # --- Layer 3: ML Model (full-fit for in-sample metrics) ---
     ml_model = TinyMLModel()
@@ -384,32 +439,40 @@ def evaluate_models(df: pd.DataFrame) -> dict:
         }
 
     df_out = df.copy()
-    df_out['heuristic_pred'] = heuristic_preds
-    df_out['morpho_pred']    = morpho_preds
-    df_out['ml_pred']        = ml_preds
-    df_out['ml_risk_pred']   = ml_risk_preds
-    df_out['semantic_pred']  = semantic_preds
+    df_out['heuristic_pred']      = heuristic_preds
+    df_out['heuristic_risk_pred'] = heuristic_risk_preds
+    df_out['morpho_pred']         = morpho_preds
+    df_out['morpho_risk_pred']    = morpho_risk_preds
+    df_out['ml_pred']             = ml_preds
+    df_out['ml_risk_pred']        = ml_risk_preds
+    df_out['semantic_pred']       = semantic_preds
 
     # ml_top_features: serializable list of (category → [(feature, weight)])
     ml_top_features = {
         cat: ml_model.get_top_features(cat, n=12)
         for cat in ml_model.classes
     }
-    
+
     if has_risk:
-        ml_risk_metrics = get_metrics(risk_labels, ml_risk_preds, "ML Risk")
+        heuristic_risk_metrics = get_metrics(risk_labels, heuristic_risk_preds, "Heuristic Risk")
+        morpho_risk_metrics    = get_metrics(risk_labels, morpho_risk_preds,    "Morphological Risk")
+        ml_risk_metrics        = get_metrics(risk_labels, ml_risk_preds,        "ML Risk")
     else:
-        ml_risk_metrics = {}
+        heuristic_risk_metrics = {}
+        morpho_risk_metrics    = {}
+        ml_risk_metrics        = {}
 
     return {
-        "heuristic_metrics":  get_metrics(labels, heuristic_preds, "Heuristic"),
-        "morpho_metrics":     get_metrics(labels, morpho_preds,    "Morphological"),
-        "ml_metrics":         get_metrics(labels, ml_preds,        "ML (TF-IDF + LogReg)"),
-        "ml_risk_metrics":    ml_risk_metrics,
-        "cv_results":         cv_results,
-        "ml_top_features":    ml_top_features,
-        "ml_classes":         list(ml_model.classes),
-        "ml_risk_classes":    list(ml_model.risk_classes) if ml_model.risk_classes else [],
-        "df":                 df_out,
-        "semantic_available": semantic_available,
+        "heuristic_metrics":      get_metrics(labels, heuristic_preds, "Heuristic"),
+        "morpho_metrics":         get_metrics(labels, morpho_preds,    "Morphological"),
+        "ml_metrics":             get_metrics(labels, ml_preds,        "ML (TF-IDF + LogReg)"),
+        "heuristic_risk_metrics": heuristic_risk_metrics,
+        "morpho_risk_metrics":    morpho_risk_metrics,
+        "ml_risk_metrics":        ml_risk_metrics,
+        "cv_results":             cv_results,
+        "ml_top_features":        ml_top_features,
+        "ml_classes":             list(ml_model.classes),
+        "ml_risk_classes":        list(ml_model.risk_classes) if ml_model.risk_classes else [],
+        "df":                     df_out,
+        "semantic_available":     semantic_available,
     }
