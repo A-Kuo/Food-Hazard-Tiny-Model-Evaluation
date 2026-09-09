@@ -137,10 +137,11 @@ def get_live_models():
     df = load_data()
     texts = df['text'].tolist()
     labels = df['true_category'].tolist()
+    risk_labels = df['risk_level'].tolist() if 'risk_level' in df.columns else None
 
     heuristic = RuleBasedHeuristic()
     ml_model  = TinyMLModel()
-    ml_model.train(texts, labels)
+    ml_model.train(texts, labels, risk_labels)
     sem = get_semantic_classifier()
 
     return {
@@ -267,6 +268,11 @@ if page == "Live Triage Dashboard":
             st.write("Running Layer 3: TF-IDF + Logistic Regression ML Inference...")
             ml_pred  = ml_model.predict([user_input])[0]
             ml_probs = ml_model.predict_proba([user_input])[0]
+            
+            if ml_model.risk_classes:
+                ml_risk_pred = ml_model.predict_risk([user_input])[0]
+            else:
+                ml_risk_pred = "N/A"
             time.sleep(0.2)
             
             if sem.available:
@@ -294,7 +300,8 @@ if page == "Live Triage Dashboard":
 
         with col3:
             st.markdown("**Layer 3: ML Model**")
-            render_styled_result(ml_pred, "ml_model", alert_type="success")
+            subtitle = f"Risk Level: **{ml_risk_pred}**" if ml_risk_pred != "N/A" else ""
+            render_styled_result(ml_pred, "ml_model", alert_type="success", subtitle=subtitle)
             
             probs_df = pd.DataFrame({
                 "Category": ml_model.classes,
@@ -352,6 +359,7 @@ elif page == "Benchmark Analytics":
     h_m  = results['heuristic_metrics']
     mo_m = results['morpho_metrics']
     ml_m = results['ml_metrics']
+    ml_risk_m = results.get('ml_risk_metrics', {})
     cv   = results['cv_results']
 
     def fmt_ci(ci):
@@ -359,13 +367,18 @@ elif page == "Benchmark Analytics":
 
     # KPI Layout
     st.markdown("### Top-Line Model Performance (In-Sample)")
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.info(f"**Heuristic Accuracy:** {h_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(h_m['acc_ci'])})")
     with col2:
         st.warning(f"**Morphological Accuracy:** {mo_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(mo_m['acc_ci'])})")
     with col3:
-        st.success(f"**ML Model Accuracy:** {ml_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(ml_m['acc_ci'])})")
+        st.success(f"**ML Category Accuracy:** {ml_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(ml_m['acc_ci'])})")
+    with col4:
+        if ml_risk_m and ml_risk_m.get('accuracy'):
+            st.success(f"**ML Risk Accuracy:** {ml_risk_m['accuracy']:.1%} \n\n (95% CI: {fmt_ci(ml_risk_m['acc_ci'])})")
+        else:
+            st.empty()
 
     # ── Confusion Matrices ──────────────────────────────────────────────────
     st.divider()
@@ -397,20 +410,30 @@ elif page == "Benchmark Analytics":
     st.markdown(cv['verdict'])
 
     ov_col1, ov_col2, ov_col3, ov_col4 = st.columns(4)
-    ov_col1.metric("In-Sample Accuracy", f"{cv['in_sample_acc']:.1%}")
+    ov_col1.metric("In-Sample Category Acc", f"{cv['in_sample_acc']:.1%}")
     ov_col2.metric(
-        "CV Accuracy (5-fold mean)",
+        "CV Category Acc (5-fold)",
         f"{cv['cv_acc_mean']:.1%}",
         delta=f"Δ gap: {cv['acc_gap']:.1%}",
         delta_color="inverse",
     )
-    ov_col3.metric("In-Sample Macro F1", f"{cv['in_sample_f1']:.1%}")
-    ov_col4.metric(
-        "CV Macro F1 (5-fold mean)",
-        f"{cv['cv_f1_mean']:.1%}",
-        delta=f"Δ gap: {cv['f1_gap']:.1%}",
-        delta_color="inverse",
-    )
+    
+    if cv.get('in_sample_risk_acc') is not None and cv['in_sample_risk_acc'] > 0:
+        ov_col3.metric("In-Sample Risk Acc", f"{cv['in_sample_risk_acc']:.1%}")
+        ov_col4.metric(
+            "CV Risk Acc (5-fold)",
+            f"{cv['cv_risk_acc_mean']:.1%}",
+            delta=f"Δ gap: {cv['risk_acc_gap']:.1%}",
+            delta_color="inverse",
+        )
+    else:
+        ov_col3.metric("In-Sample Macro F1", f"{cv['in_sample_f1']:.1%}")
+        ov_col4.metric(
+            "CV Macro F1 (5-fold mean)",
+            f"{cv['cv_f1_mean']:.1%}",
+            delta=f"Δ gap: {cv['f1_gap']:.1%}",
+            delta_color="inverse",
+        )
 
     fold_df = pd.DataFrame({
         "Fold Phase": [f"Validation Fold {i+1}" for i in range(cv['n_splits'])],
