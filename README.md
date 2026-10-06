@@ -1,7 +1,5 @@
 # Food Hazard Triage & Benchmarking System
 
-**Track C — Tiny Model / Eval**
-
 A Streamlit benchmarking tool that compares lightweight NLP approaches for classifying food-safety incident reports into four dominant hazard categories: **Biological, Allergen, Physical,** and **Chemical**.
 
 ## What I Built
